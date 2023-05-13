@@ -50,17 +50,6 @@ def fixer(inp):
 	except:	# Nếu xảy ra lỗi, trả về giá trị ban đầu
 		return raw_backup
 
-'''
-test_case = ['https://google%28.%30co%29m/%30%31ABC/D?AB=C&A=B', 'https://google(.co)m/01ABC/D(?AB=C&A=B', """https://google%28.%30co%29m/%30%31ABC/D?AB=C&A=B
-https://google(.co)m/01ABC/D(?AB=C&A=B"""]
-import win32clipboard
-for i in test_case:
-	win32clipboard.OpenClipboard()
-	win32clipboard.SetClipboardData(win32clipboard.CF_UNICODETEXT, fixer(win32clipboard.GetClipboardData()))
-	print(win32clipboard.GetClipboardData())
-	win32clipboard.CloseClipboard()
-'''
-
 # Nhập thư viện
 import win32clipboard, time, os, keyboard
 from time import gmtime, strftime
