@@ -9,6 +9,30 @@ def fixer(inp):
 		from requests.utils import quote
 		import re
 		
+		def url_check(inp):
+			if re.search(r'(http|https|ssl)?(:\/\/)?([a-zA-Z0-9\-\.]{0,3}+)?[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?', inp):
+				return True
+			else:
+				return False
+
+		def cases(domain):
+			def lst(inp):	# Danh sách các trường hợp
+				return [
+				inp.replace(' ', '.'), 
+				re.sub('%[0-9]+', "", inp),
+				re.sub('(%[0-9]+)(?:[^.]+)(%[0-9]+)', ".", inp), 
+				re.sub('(%[0-9]+)(?:[^.]+)(%[0-9]+)', "", inp), 
+				inp, inp.replace('%20', '.')
+				]
+			lst = lst(domain)
+			for i in lst:
+				if url_check(i):
+					ans = i
+					break
+				else:
+					lst.remove(i)
+			return ans
+
 		# Chia dòng
 		inp = inp.splitlines()
 		# Tạo danh sách đầu ra
@@ -20,26 +44,21 @@ def fixer(inp):
 			# Lấy domain của url
 			match1 = re.search(r'(https|http|ssl)(:\/\/)([^\/]+)', raw)
 			if match1:
-			    domain = match1.group(3)
+				domain = match1.group(3)
+				# Kiểm tra url đã encode hay chưa
+				if re.search(r'%[0-9]+', domain):
+					fixed = cases(domain)
+				else:
+					fixed = quote(domain, safe=':/?&=')	# Nếu không, encode và loại bỏ %<number>
+					
+				# Thay thế domain cũ bằng domain mới
+				fixed = raw.replace(domain, fixed)
+
+				# Thêm mục vào danh sách đầu ra
+				otp.append(fixed)
+
 			else:
-			    assert False, 'Domain in URL could not be found'	# Trả về lỗi nếu không thể lấy domain
-
-			# Kiểm tra url đã encode hay chưa
-			match2 = re.search(r'%[0-9]+', raw)
-			if match2:
-				fixed = re.sub('%[0-9]+', "", domain)	# Nếu có, loại bỏ trực tiếp %<number>
-			else:
-				encoded = quote(domain, safe=':/?&=')	# Nếu không, encode và loại bỏ %<number>
-				fixed = re.sub('%[0-9]+', "", encoded)
-
-			# Thay dấu khoảng cách bằng dấu chấm nếu sau khi xử lí không có dấu ngăn cách giữa domain và top-level domain
-			fixed = re.sub(' +', ".", fixed)
-			
-			# Thay thế domain cũ bằng domain mới
-			fixed = raw.replace(domain, fixed)
-
-			# Thêm mục vào danh sách đầu ra
-			otp.append(fixed)
+				assert False, 'Domain in URL could not be found'	# Trả về lỗi nếu không thể lấy domain
 
 		# Nối các dòng
 		otp = '\n'.join(otp)
