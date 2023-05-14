@@ -1,73 +1,67 @@
-def fixer(inp):
+def fixer(raw):
 
 	# Sao lưu đầu vào
-	raw_backup = inp
+	raw_backup = raw
 
-	try:	# Xử lí chuỗi
+	#try:	# Xử lí chuỗi
 
-		# Nhập thư viện
-		from requests.utils import quote
-		import re
-		
-		def url_check(inp):
-			if re.search(r'(http|https|ssl)?(:\/\/)?([a-zA-Z0-9\-\.]{0,3}+)?[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?', inp):
-				return True
+	# Nhập thư viện
+	from requests.utils import quote
+	import re
+	
+	def url_check(inp):
+		inp = quote(inp)
+		if re.search(r'%[0-9]+', inp):
+			return False
+		else:
+			return True
+
+	def cases(inp):	# Danh sách các trường hợp
+		return [
+		inp.replace(' ', '.'),
+		inp.replace('%20', '.'),
+		re.sub('(%[0-9]+)(?:[^.]+)(%[0-9]+)', ".", inp), 
+		re.sub('(%[0-9]+)(?:[^.]+)(%[0-9]+)', "", inp),
+		re.sub('%[0-9]+', "", inp),
+		quote(inp)
+		]
+
+	# Lấy domain của url
+	match1 = re.search(r'(https|http|ssl)(:\/\/)([^\/]+)', raw)
+	if match1:
+		domain = match1.group(3)
+		fixed = domain
+
+		lst0 = cases(domain)
+		double_check = True
+		lst1 = []
+
+		for i in lst0:
+			if url_check(i):
+				fixed = i
+				double_check = False
+				break
 			else:
-				return False
+				lst1.append(i)
 
-		def cases(domain):
-			def lst(inp):	# Danh sách các trường hợp
-				return [
-				inp.replace(' ', '.'), 
-				re.sub('%[0-9]+', "", inp),
-				re.sub('(%[0-9]+)(?:[^.]+)(%[0-9]+)', ".", inp), 
-				re.sub('(%[0-9]+)(?:[^.]+)(%[0-9]+)', "", inp), 
-				inp, inp.replace('%20', '.')
-				]
-			lst = lst(domain)
-			for i in lst:
-				if url_check(i):
-					ans = i
-					break
-				else:
-					lst.remove(i)
-			return ans
+		if double_check:
+			for i in lst1:
+				lst2 = cases(i)
+				for j in lst2:
+					if url_check(j):
+						fixed = j
+						break
 
-		# Chia dòng
-		inp = inp.splitlines()
-		# Tạo danh sách đầu ra
-		otp = []
+		# Thay thế domain cũ bằng domain mới
+		fixed = raw.replace(domain, fixed)
 
-		# Xử lí danh sách đầu vào
-		for raw in inp:
+	else:
+		assert False, 'Domain in URL could not be found'	# Trả về lỗi nếu không thể lấy domain
+	
+	return fixed
 
-			# Lấy domain của url
-			match1 = re.search(r'(https|http|ssl)(:\/\/)([^\/]+)', raw)
-			if match1:
-				domain = match1.group(3)
-				# Kiểm tra url đã encode hay chưa
-				if re.search(r'%[0-9]+', domain):
-					fixed = cases(domain)
-				else:
-					fixed = quote(domain, safe=':/?&=')	# Nếu không, encode và loại bỏ %<number>
-					
-				# Thay thế domain cũ bằng domain mới
-				fixed = raw.replace(domain, fixed)
-
-				# Thêm mục vào danh sách đầu ra
-				otp.append(fixed)
-
-			else:
-				assert False, 'Domain in URL could not be found'	# Trả về lỗi nếu không thể lấy domain
-
-		# Nối các dòng
-		otp = '\n'.join(otp)
-
-		# Trả về kết quả
-		return otp
-
-	except:	# Nếu xảy ra lỗi, trả về giá trị ban đầu
-		return raw_backup
+	#except:	# Nếu xảy ra lỗi, trả về giá trị ban đầu
+	#	return raw_backup
 
 # Nhập thư viện
 import win32clipboard, time, os, keyboard
