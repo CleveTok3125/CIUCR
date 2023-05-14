@@ -103,10 +103,10 @@ while True:
 	# Đóng Clipboard
 	win32clipboard.CloseClipboard()
 
-	# Thoát vòng lặp bằng phím tuỳ chỉnh
 	# Đặt thời gian delay giữa các vòng lặp
 	time.sleep(delay)
-
+	
+	# Thoát vòng lặp bằng phím tuỳ chỉnh
 	if keyboard.is_pressed('esc'):
 		break
 		
